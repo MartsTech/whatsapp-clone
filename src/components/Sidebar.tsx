@@ -4,7 +4,7 @@ import MoreVertIcon from "@material-ui/icons/MoreVert";
 import SearchIcon from "@material-ui/icons/Search";
 import styled from "styled-components";
 import * as EmailValidator from "email-validator";
-import { auth } from "../firebase/firebase";
+import { useAuthUser, withAuthUser } from "next-firebase-auth";
 
 const createChat = () => {
   const input = prompt(
@@ -21,8 +21,10 @@ const createChat = () => {
 };
 
 const Sidebar: React.FC = () => {
+  const user = useAuthUser();
+
   const signOut = () => {
-    auth.signOut();
+    user.signOut();
   };
 
   return (
@@ -49,7 +51,7 @@ const Sidebar: React.FC = () => {
   );
 };
 
-export default Sidebar;
+export default withAuthUser()(Sidebar);
 
 const Container = styled.div``;
 

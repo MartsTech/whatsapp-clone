@@ -1,11 +1,9 @@
 import Head from "next/head";
 import React from "react";
-import { useIsAuth } from "../utils/useIsAuth";
 import Sidebar from "../components/Sidebar";
+import { withAuthUser, AuthAction } from "next-firebase-auth";
 
 const Home: React.FC = () => {
-  useIsAuth();
-
   return (
     <>
       <Head>
@@ -17,4 +15,6 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
+export default withAuthUser({
+  whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
+})(Home);

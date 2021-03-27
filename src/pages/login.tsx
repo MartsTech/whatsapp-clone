@@ -1,24 +1,14 @@
 import { Button } from "@material-ui/core";
+import { AuthAction, withAuthUser } from "next-firebase-auth";
 import Head from "next/head";
 import Image from "next/image";
-import { useRouter } from "next/router";
 import React from "react";
-import { useIsAuth } from "src/utils/useIsAuth";
 import styled from "styled-components";
 import { auth, provider } from "../firebase/firebase";
 
 const Login: React.FC = () => {
-  const router = useRouter();
-
-  useIsAuth();
-
   const signIn = () => {
-    auth
-      .signInWithPopup(provider)
-      .then(() => {
-        router.replace("/");
-      })
-      .catch((err) => alert(err.message));
+    auth.signInWithPopup(provider).catch((err) => alert(err.message));
   };
 
   return (
@@ -45,7 +35,7 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default withAuthUser({ whenAuthed: AuthAction.REDIRECT_TO_APP })(Login);
 
 const Wrapper = styled.div`
   display: grid;

@@ -1,8 +1,11 @@
 import { AppProps } from "next/app";
 import React, { Fragment } from "react";
 import { createGlobalStyle } from "styled-components";
+import initAuth from "../firebase/initAuth";
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
+  initAuth();
+
   return (
     <Fragment>
       <GlobalStyle />
