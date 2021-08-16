@@ -1,7 +1,12 @@
+import IsAuth from "modules/auth/IsAuth";
 import Home from "modules/home/Home";
 
 const HomePage = () => {
-  return <Home />;
+  return (
+    <IsAuth>
+      <Home />
+    </IsAuth>
+  );
 };
 
 export default HomePage;

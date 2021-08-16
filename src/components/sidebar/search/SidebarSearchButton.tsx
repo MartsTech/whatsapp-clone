@@ -1,8 +1,11 @@
 import { Button } from "@material-ui/core";
+import { useStore } from "stores/store";
 import styled from "styled-components";
 
 const SidebarSearchButton = () => {
-  return <StyledButton>Start a new chat</StyledButton>;
+  const { createChat } = useStore().chatStore;
+
+  return <StyledButton onClick={createChat}>Start a new chat</StyledButton>;
 };
 
 export default SidebarSearchButton;

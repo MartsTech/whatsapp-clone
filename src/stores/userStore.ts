@@ -1,5 +1,6 @@
 import { auth, provider } from "config/firebase";
 import { makeAutoObservable } from "mobx";
+import { toast } from "react-toastify";
 import { User } from "types/user";
 
 class UserStore {
@@ -30,7 +31,7 @@ class UserStore {
         }
       })
       .catch((error) => {
-        alert(error.message);
+        toast.error(error.message);
       });
 
     this.loading = false;
