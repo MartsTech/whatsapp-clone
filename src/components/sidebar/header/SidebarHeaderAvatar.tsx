@@ -1,11 +1,15 @@
 import { Avatar } from "@material-ui/core";
+import { observer } from "mobx-react-lite";
+import { useStore } from "stores/store";
 import styled from "styled-components";
 
 const SidebarHeaderAvatar = () => {
-  return <StyledAvatar />;
+  const { user } = useStore().userStore;
+
+  return <StyledAvatar src={user?.photoURL} />;
 };
 
-export default SidebarHeaderAvatar;
+export default observer(SidebarHeaderAvatar);
 
 const StyledAvatar = styled(Avatar)`
   cursor: pointer;
