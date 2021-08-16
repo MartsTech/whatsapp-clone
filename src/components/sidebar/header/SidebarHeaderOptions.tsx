@@ -6,10 +6,10 @@ import styled from "styled-components";
 const SidebarHeaderOptions = () => {
   return (
     <StyledIconsContainer>
-      <IconButton>
+      <IconButton aria-label="chat">
         <ChatIcon />
       </IconButton>
-      <IconButton>
+      <IconButton aria-label="more">
         <MoreVertIcon />
       </IconButton>
     </StyledIconsContainer>

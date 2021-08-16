@@ -6,7 +6,7 @@ import styled from "styled-components";
 const SidebarHeaderAvatar = () => {
   const { user, signOut } = useStore().userStore;
 
-  return <StyledAvatar src={user?.photoURL} onClick={signOut} />;
+  return <StyledAvatar onClick={signOut} src={user?.photoURL} alt="avatar" />;
 };
 
 export default observer(SidebarHeaderAvatar);
