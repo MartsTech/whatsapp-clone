@@ -1,7 +1,7 @@
 {
-  "extends": "stylelint-config-recommended",
-  "rules": {
-    "block-no-empty": null,
-    "unit-whitelist": ["em", "rem", "s"]
-  }
+  "processors": ["stylelint-processor-styled-components"],
+  "extends": [
+    "stylelint-config-recommended",
+    "stylelint-config-styled-components"
+  ]
 }

@@ -10,6 +10,9 @@
     "gen-env": "npx gen-env-types .env.local -o src/types/env.d.ts -e ."
   },
   "dependencies": {
+    "@material-ui/core": "^4.12.3",
+    "@material-ui/icons": "^4.11.2",
+    "firebase": "^8.9.1",
     "mobx": "^6.3.2",
     "mobx-react-lite": "^3.2.0",
     "next": "11.1.0",
@@ -24,7 +27,10 @@
     "eslint": "7.32.0",
     "eslint-config-next": "11.1.0",
     "gen-env-types": "^1.3.0",
+    "stylelint": "^13.13.1",
     "stylelint-config-recommended": "^5.0.0",
+    "stylelint-config-styled-components": "^0.1.1",
+    "stylelint-processor-styled-components": "^1.10.0",
     "typescript": "^4.3.5"
   }
 }
