@@ -4,9 +4,9 @@ import { useStore } from "stores/store";
 import styled from "styled-components";
 
 const SidebarHeaderAvatar = () => {
-  const { user } = useStore().userStore;
+  const { user, signOut } = useStore().userStore;
 
-  return <StyledAvatar src={user?.photoURL} />;
+  return <StyledAvatar src={user?.photoURL} onClick={signOut} />;
 };
 
 export default observer(SidebarHeaderAvatar);

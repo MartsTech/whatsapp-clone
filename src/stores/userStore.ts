@@ -1,5 +1,6 @@
-import { auth, provider } from "config/firebase";
-import { makeAutoObservable } from "mobx";
+import { auth, db, provider } from "config/firebase";
+import firebase from "firebase/app";
+import { makeAutoObservable, runInAction } from "mobx";
 import { toast } from "react-toastify";
 import { User } from "types/user";
 
@@ -23,11 +24,22 @@ class UserStore {
       .signInWithPopup(provider)
       .then(({ user }) => {
         if (user) {
-          this.user = {
-            email: user.email!,
-            displayName: user.displayName!,
-            photoURL: user.photoURL!,
-          };
+          runInAction(() => {
+            this.user = {
+              email: user.email!,
+              displayName: user.displayName!,
+              photoURL: user.photoURL!,
+            };
+          });
+
+          db.collection("users").doc(user.uid).set(
+            {
+              email: user.email,
+              photoURL: user.photoURL,
+              lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+            },
+            { merge: true }
+          );
         }
       })
       .catch((error) => {
