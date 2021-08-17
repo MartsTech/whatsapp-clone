@@ -1,21 +1,17 @@
-import useUserChats from "hooks/useUserChats";
-import { Chat } from "types/chat";
+import { observer } from "mobx-react-lite";
+import { useStore } from "stores/store";
 import SidebarChatsItem from "./SidebarChatsItem";
 
 const SidebarChats = () => {
-  const [chatsSnapshot] = useUserChats();
+  const { chats } = useStore().chatStore;
 
   return (
     <>
-      {chatsSnapshot?.docs.map((doc) => {
-        const chat = {
-          id: doc.id,
-          ...doc.data(),
-        } as Chat;
+      {chats.map((chat) => {
         return <SidebarChatsItem key={chat.id} chat={chat} />;
       })}
     </>
   );
 };
 
-export default SidebarChats;
+export default observer(SidebarChats);
