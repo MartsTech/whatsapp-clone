@@ -13,15 +13,15 @@ class UserStore {
     makeAutoObservable(this);
 
     reaction(
-      () => this.user?.email,
-      (email) => {
-        if (!email || store.chatStore.chatsQuery) {
+      () => this.user,
+      (user) => {
+        if (!user || store.chatStore.chatsQuery) {
           return;
         }
 
         const chatsQuery = db
           .collection("chats")
-          .where("users", "array-contains", email);
+          .where("users", "array-contains", user.email);
 
         store.chatStore.setChatsQuery(chatsQuery);
       }
@@ -68,6 +68,9 @@ class UserStore {
   signOut = () => {
     auth.signOut();
     this.user = null;
+    store.chatStore.setChatsQuery(null);
+    store.chatStore.chatsRegistery.clear();
+    store.chatStore.recipientsRegistery.clear();
   };
 }
 

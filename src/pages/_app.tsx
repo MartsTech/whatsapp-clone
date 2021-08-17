@@ -11,8 +11,8 @@ const App = ({ Component, pageProps }: AppProps) => {
   return (
     <StoreContext.Provider value={store}>
       <AuthProvider>
-        <DefaultSeo {...defaultSEO} />
         <Component {...pageProps} />
+        <DefaultSeo {...defaultSEO} />
         <ToastContainer position="bottom-right" hideProgressBar />
       </AuthProvider>
     </StoreContext.Provider>

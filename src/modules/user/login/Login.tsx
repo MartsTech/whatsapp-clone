@@ -4,8 +4,8 @@ import LoginSignInButton from "./LoginSignInButton";
 
 const Login = () => {
   return (
-    <StyledContainer>
-      <StyledLogin>
+    <StyledWrapper>
+      <StyledContainer>
         <Image
           src="/images/logo.png"
           width={200}
@@ -14,21 +14,21 @@ const Login = () => {
           alt="logo"
         />
         <LoginSignInButton />
-      </StyledLogin>
-    </StyledContainer>
+      </StyledContainer>
+    </StyledWrapper>
   );
 };
 
 export default Login;
 
-const StyledContainer = styled.div`
+const StyledWrapper = styled.div`
   display: grid;
   place-items: center;
   height: 100vh;
   background-color: whitesmoke;
 `;
 
-const StyledLogin = styled.div`
+const StyledContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -1,13 +1,14 @@
 import { db } from "config/firebase";
+import firebase from "firebase/app";
 import { makeAutoObservable, reaction, runInAction } from "mobx";
 import { toast } from "react-toastify";
-import { Chat } from "types/chat";
+import { Chat, ChatRecipient } from "types/chat";
 import validateEmail from "utils/validateEmail";
 import { store } from "./store";
-import firebase from "firebase/app";
 
 class ChatStore {
   chatsRegistery = new Map<string, Chat>();
+  recipientsRegistery = new Map<string, ChatRecipient>();
   chatsQuery: firebase.firestore.Query<firebase.firestore.DocumentData> | null =
     null;
 
@@ -40,12 +41,6 @@ class ChatStore {
   get chats() {
     return Array.from(this.chatsRegistery.values());
   }
-
-  setChatsQuery = (
-    chatsQuery: firebase.firestore.Query<firebase.firestore.DocumentData>
-  ) => {
-    this.chatsQuery = chatsQuery;
-  };
 
   createChat = async () => {
     const input = prompt(
@@ -97,6 +92,43 @@ class ChatStore {
     );
 
     return exists;
+  };
+
+  setChatsQuery = (
+    chatsQuery: firebase.firestore.Query<firebase.firestore.DocumentData> | null
+  ) => {
+    this.chatsQuery = chatsQuery;
+  };
+
+  getRecipientEmail = (users: string[]) => {
+    return users.find((user) => user !== store.userStore.user?.email) || "";
+  };
+
+  loadRecipient = async (email: string) => {
+    if (this.recipientsRegistery.has(email)) {
+      return this.recipientsRegistery.get(email);
+    }
+
+    let user: ChatRecipient;
+
+    const userSnapshot = await db
+      .collection("users")
+      .where("email", "==", email)
+      .get();
+
+    const userDoc = userSnapshot?.docs?.[0];
+
+    if (userDoc) {
+      user = {
+        ...userDoc.data(),
+      } as ChatRecipient;
+    } else {
+      user = { email };
+    }
+
+    this.recipientsRegistery.set(user.email, user);
+
+    return user;
   };
 }
 
