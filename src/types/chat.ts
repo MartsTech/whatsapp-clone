@@ -5,6 +5,11 @@ export interface Chat {
 
 export interface ChatRecipient {
   email: string;
-  displayName?: string;
   photoURL?: string;
+  lastSeen?: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  timestamp: any;
 }

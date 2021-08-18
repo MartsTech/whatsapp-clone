@@ -15,4 +15,6 @@ const Sidebar = () => {
 
 export default Sidebar;
 
-const StyledContainer = styled.section``;
+const StyledContainer = styled.section`
+  width: 20rem;
+`;

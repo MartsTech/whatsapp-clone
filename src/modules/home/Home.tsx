@@ -1,11 +1,7 @@
-import Sidebar from "components/sidebar/Sidebar";
+import DefaultLayout from "components/layouts/DefaultLayout";
 
 const Home = () => {
-  return (
-    <>
-      <Sidebar />
-    </>
-  );
+  return <DefaultLayout></DefaultLayout>;
 };
 
 export default Home;

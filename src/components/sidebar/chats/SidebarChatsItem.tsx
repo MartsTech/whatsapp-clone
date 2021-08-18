@@ -1,28 +1,32 @@
 import { Avatar } from "@material-ui/core";
 import useChatRecipient from "hooks/useChatRecipient";
+import { useRouter } from "next/router";
 import { useStore } from "stores/store";
 import styled from "styled-components";
 import { Chat } from "types/chat";
+import SidebarChatsItemSkeleton from "./SidebarChatsItemSkeleton";
 
 interface SidebarChatsItemProps {
   chat: Chat;
 }
 
 const SidebarChatsItem: React.FC<SidebarChatsItemProps> = ({ chat }) => {
-  const { users } = chat;
+  const { users, id } = chat;
 
   const { getRecipientEmail } = useStore().chatStore;
+  const router = useRouter();
+
   const recipientEmail = getRecipientEmail(users);
   const [recipient] = useChatRecipient(recipientEmail);
 
   if (!recipient) {
-    return null;
+    return <SidebarChatsItemSkeleton />;
   }
 
   const { email, photoURL } = recipient;
 
   return (
-    <StyledContainer>
+    <StyledContainer onClick={() => router.push(`/chat/${id}`)}>
       <StyledAvatar src={photoURL} alt="avatar">
         {email[0]}
       </StyledAvatar>
