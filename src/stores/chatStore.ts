@@ -30,7 +30,7 @@ class ChatStore {
 
             const chat = {
               id: doc.id,
-              ...doc.data(),
+              users: doc.data().users,
             } as Chat;
 
             runInAction(() => {
@@ -115,12 +115,14 @@ class ChatStore {
 
     const chat = {
       id: chatSnapshot.id,
-      ...chatSnapshot.data(),
+      users: chatSnapshot.data()?.users,
     } as Chat;
 
     runInAction(() => {
-      this.chatsRegistery.set(id, chat);
-      this.selectedChat = chat;
+      if (chat.users) {
+        this.chatsRegistery.set(id, chat);
+        this.selectedChat = chat;
+      }
     });
 
     return chat;

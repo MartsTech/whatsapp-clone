@@ -5,19 +5,19 @@ import styled from "styled-components";
 
 const ChatHeaderOptions = () => {
   return (
-    <StyledIconsContainer>
+    <StyledContainer>
       <IconButton aria-label="file">
         <AttachFileIcon />
       </IconButton>
       <IconButton aria-label="more">
         <MoreVertIcon />
       </IconButton>
-    </StyledIconsContainer>
+    </StyledContainer>
   );
 };
 
 export default ChatHeaderOptions;
 
-const StyledIconsContainer = styled.div`
+const StyledContainer = styled.div`
   margin-left: auto;
 `;

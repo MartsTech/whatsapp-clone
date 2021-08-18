@@ -28,11 +28,6 @@ class UserStore {
     );
   }
 
-  setUser = (user: User | null) => {
-    this.user = user;
-    this.loading = false;
-  };
-
   signIn = () => {
     this.loading = true;
 
@@ -42,8 +37,8 @@ class UserStore {
         if (user) {
           runInAction(() => {
             this.user = {
+              uid: user.uid,
               email: user.email!,
-              displayName: user.displayName!,
               photoURL: user.photoURL!,
             };
           });
@@ -72,6 +67,26 @@ class UserStore {
     store.chatStore.chatsRegistery.clear();
     store.recipientStore.recipientsRegistery.clear();
     store.messageStore.messagesRegistery.clear();
+  };
+
+  updateLastSeen = () => {
+    if (!this.user) {
+      return false;
+    }
+
+    db.collection("users").doc(this.user.uid).set(
+      {
+        lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    return true;
+  };
+
+  setUser = (user: User | null) => {
+    this.user = user;
+    this.loading = false;
   };
 }
 

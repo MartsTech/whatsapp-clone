@@ -4,16 +4,16 @@ import ChatHeaderOptions from "./ChatHeaderOptions";
 
 const ChatHeader = () => {
   return (
-    <StyledHeader>
+    <StyledContainer>
       <ChatHeaderInfo />
       <ChatHeaderOptions />
-    </StyledHeader>
+    </StyledContainer>
   );
 };
 
 export default ChatHeader;
 
-const StyledHeader = styled.div`
+const StyledContainer = styled.div`
   position: sticky;
   background-color: white;
   z-index: 100;

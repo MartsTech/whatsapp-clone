@@ -6,6 +6,21 @@ const ChatInputField = () => {
   const { sendMessage } = useStore().messageStore;
   const [input, setInput] = useState("");
 
+  const handleSendMessage = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    e.preventDefault();
+
+    if (input === "") {
+      return;
+    }
+    const success = sendMessage(input);
+
+    if (success) {
+      setInput("");
+    }
+  };
+
   return (
     <StyledForm>
       <StyledInput
@@ -14,14 +29,7 @@ const ChatInputField = () => {
         placeholder="Enter message"
         type="text"
       />
-      <button
-        hidden
-        type="submit"
-        onClick={(e) => {
-          e.preventDefault();
-          sendMessage(input);
-        }}
-      >
+      <button hidden type="submit" onClick={handleSendMessage}>
         Send Message
       </button>
     </StyledForm>
@@ -30,7 +38,10 @@ const ChatInputField = () => {
 
 export default ChatInputField;
 
-const StyledForm = styled.form``;
+const StyledForm = styled.form`
+  flex: 1;
+  display: flex;
+`;
 
 const StyledInput = styled.input`
   flex: 1;

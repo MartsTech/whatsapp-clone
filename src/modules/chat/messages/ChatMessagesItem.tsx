@@ -2,13 +2,13 @@ import styled from "styled-components";
 import { ChatMessage } from "types/chat";
 
 interface ChatMessagesItemProps {
-  message: ChatMessage;
+  data: ChatMessage;
 }
 
-const ChatMessagesItem: React.FC<ChatMessagesItemProps> = ({ message }) => {
-  const {} = message;
+const ChatMessagesItem: React.FC<ChatMessagesItemProps> = ({ data }) => {
+  const { message } = data;
 
-  return <StyledContainer></StyledContainer>;
+  return <StyledContainer>{message}</StyledContainer>;
 };
 
 export default ChatMessagesItem;

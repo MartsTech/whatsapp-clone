@@ -10,7 +10,7 @@ const ChatHeaderInfo = () => {
     return null;
   }
 
-  const { email, lastSeen, photoURL } = selectedRecipient;
+  const { email, photoURL } = selectedRecipient;
 
   return (
     <StyledContainer>

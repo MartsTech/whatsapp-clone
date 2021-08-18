@@ -1,6 +1,9 @@
 import { db } from "config/firebase";
-import { makeAutoObservable } from "mobx";
+import firebase from "firebase/app";
+import { makeAutoObservable, runInAction } from "mobx";
+import { toast } from "react-toastify";
 import { ChatMessage } from "types/chat";
+import { store } from "./store";
 
 class MessageStore {
   messagesRegistery = new Map<string, ChatMessage>();
@@ -13,10 +16,10 @@ class MessageStore {
     return Array.from(this.messagesRegistery.values());
   }
 
-  loadMessages = async (id: string) => {
+  loadMessages = (id: string) => {
     this.messagesRegistery.clear();
 
-    const messagesQuery = await db
+    const messagesQuery = db
       .collection("chats")
       .doc(id)
       .collection("messages")
@@ -35,15 +38,34 @@ class MessageStore {
 
         const message = {
           ...data,
-          timestamp: data.timestamp.toDate().getTime(),
+          timestamp: data.timestamp?.toDate().getTime(),
         } as ChatMessage;
 
-        this.messagesRegistery.set(message.id, message);
+        runInAction(() => {
+          this.messagesRegistery.set(message.id, message);
+        });
       });
     });
   };
 
-  sendMessage = (message: string) => {};
+  sendMessage = (message: string) => {
+    const user = store.userStore.user;
+    const chat = store.chatStore.selectedChat;
+    const lastSeenUpdated = store.userStore.updateLastSeen();
+
+    if (!chat || !user || !lastSeenUpdated) {
+      toast.error("An error occurred. Please try again.");
+      return false;
+    }
+
+    db.collection("chats").doc(chat.id).collection("messages").add({
+      message,
+      user: user.email,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return true;
+  };
 }
 
 export default MessageStore;

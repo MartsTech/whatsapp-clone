@@ -1,5 +1,6 @@
 import IsAuth from "modules/auth/IsAuth";
 import Chat from "modules/chat/Chat";
+import ChatExists from "modules/chat/ChatExists";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useStore } from "stores/store";
@@ -12,9 +13,9 @@ const ChatPage = () => {
 
   useEffect(() => {
     const loadData = async () => {
+      loadMessages(id);
       const chat = await selectChat(id);
       await selectRecipient(chat.users);
-      await loadMessages(id);
     };
     if (id) {
       loadData();
@@ -23,7 +24,9 @@ const ChatPage = () => {
 
   return (
     <IsAuth>
-      <Chat />
+      <ChatExists id={id}>
+        <Chat />
+      </ChatExists>
     </IsAuth>
   );
 };

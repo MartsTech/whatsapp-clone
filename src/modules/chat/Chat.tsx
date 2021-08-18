@@ -7,20 +7,18 @@ import ChatMessages from "./messages/ChatMessages";
 const Chat = () => {
   return (
     <DefaultLayout>
-      <StyledWrapper>
-        <StyledContainer>
-          <ChatHeader />
-          <ChatMessages />
-          <ChatInput />
-        </StyledContainer>
-      </StyledWrapper>
+      <StyledContainer>
+        <ChatHeader />
+        <ChatMessages />
+        <ChatInput />
+      </StyledContainer>
     </DefaultLayout>
   );
 };
 
 export default Chat;
 
-const StyledWrapper = styled.div`
+const StyledContainer = styled.section`
   flex: 1;
   overflow: scroll;
   height: 100vh;
@@ -31,5 +29,3 @@ const StyledWrapper = styled.div`
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 `;
-
-const StyledContainer = styled.div``;

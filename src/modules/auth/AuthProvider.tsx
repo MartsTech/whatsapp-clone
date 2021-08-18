@@ -9,8 +9,8 @@ const AuthProvider: React.FC = ({ children }) => {
     auth.onAuthStateChanged((user) => {
       if (user) {
         setUser({
+          uid: user.uid,
           email: user.email!,
-          displayName: user.displayName!,
           photoURL: user.photoURL!,
         });
       } else {
