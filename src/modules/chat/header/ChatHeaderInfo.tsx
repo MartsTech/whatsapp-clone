@@ -2,6 +2,7 @@ import { Avatar } from "@material-ui/core";
 import { observer } from "mobx-react-lite";
 import { useStore } from "stores/store";
 import styled from "styled-components";
+import TimeAgo from "timeago-react";
 
 const ChatHeaderInfo = () => {
   const { selectedRecipient } = useStore().recipientStore;
@@ -10,14 +11,16 @@ const ChatHeaderInfo = () => {
     return null;
   }
 
-  const { email, photoURL } = selectedRecipient;
+  const { email, photoURL, lastSeen } = selectedRecipient;
 
   return (
     <StyledContainer>
       <Avatar src={photoURL} alt="avatar" />
       <StyledInfo>
         <StyledEmail>{email}</StyledEmail>
-        <StyledLastSeen>Last seen</StyledLastSeen>
+        <StyledLastSeen>
+          Last Active: {lastSeen && <TimeAgo datetime={lastSeen.toDate()} />}
+        </StyledLastSeen>
       </StyledInfo>
     </StyledContainer>
   );

@@ -8,6 +8,8 @@ import { store } from "./store";
 
 class ChatStore {
   chatsRegistery = new Map<string, Chat>();
+  lastChat = 0;
+  hasMore = false;
   selectedChat: Chat | null = null;
   chatsQuery: firebase.firestore.Query<firebase.firestore.DocumentData> | null =
     null;
@@ -22,21 +24,15 @@ class ChatStore {
           return;
         }
 
-        const chatsSnapshot = await chatsQuery.limit(10).get();
-
-        chatsSnapshot.docs.forEach((doc) => {
-          if (this.chatsRegistery.has(doc.id)) {
-            return;
-          }
-
-          const chat = {
-            id: doc.id,
-            users: doc.data().users,
-          } as Chat;
-
-          runInAction(() => {
-            this.chatsRegistery.set(chat.id, chat);
+        chatsQuery
+          .orderBy("lastActive", "desc")
+          .limit(10)
+          .onSnapshot((snapshot) => {
+            this.setChatsFromSnapshot(snapshot);
           });
+
+        runInAction(() => {
+          this.lastChat = this.lastChat + 9;
         });
       }
     );
@@ -45,6 +41,41 @@ class ChatStore {
   get chats() {
     return Array.from(this.chatsRegistery.values());
   }
+
+  loadMore = async () => {
+    if (!this.chatsQuery) {
+      toast.error("An error occurred. Please try again.");
+      return;
+    }
+
+    const chatsSnapshot = await this.chatsQuery
+      .orderBy("lastActive", "desc")
+      .startAfter(this.lastChat)
+      .limit(9)
+      .get();
+
+    this.setChatsFromSnapshot(chatsSnapshot);
+  };
+
+  private setChatsFromSnapshot = (
+    chatsSnapshot: firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>
+  ) => {
+    chatsSnapshot?.docs?.forEach((doc) => {
+      if (this.chatsRegistery.has(doc.id)) {
+        return;
+      }
+
+      const chat = {
+        id: doc.id,
+        users: doc.data().users,
+        lastActive: doc.data().lastActive,
+      } as Chat;
+
+      runInAction(() => {
+        this.chatsRegistery.set(chat.id, chat);
+      });
+    });
+  };
 
   createChat = () => {
     const input = prompt(
@@ -81,6 +112,7 @@ class ChatStore {
 
     db.collection("chats").add({
       users: [user.email, input],
+      lastActive: firebase.firestore.FieldValue.serverTimestamp(),
     });
   };
 
@@ -103,6 +135,7 @@ class ChatStore {
     const chat = {
       id: chatSnapshot.id,
       users: chatSnapshot.data()?.users,
+      lastActive: chatSnapshot.data()?.lastActive,
     } as Chat;
 
     runInAction(() => {

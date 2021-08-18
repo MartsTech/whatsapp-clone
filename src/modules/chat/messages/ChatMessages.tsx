@@ -1,6 +1,7 @@
 import { observer } from "mobx-react-lite";
 import { useStore } from "stores/store";
 import styled from "styled-components";
+import ChatMessagesEnd from "./ChatMessagesEnd";
 import ChatMessagesItem from "./ChatMessagesItem";
 
 const ChatMessages = () => {
@@ -11,7 +12,7 @@ const ChatMessages = () => {
       {messages.map((message) => (
         <ChatMessagesItem key={message.id} data={message} />
       ))}
-      <StyledMessagesEnd />
+      <ChatMessagesEnd />
     </StyledContainer>
   );
 };
@@ -23,5 +24,3 @@ const StyledContainer = styled.div`
   background-color: #e5ded8;
   min-height: 90vh;
 `;
-
-const StyledMessagesEnd = styled.div``;

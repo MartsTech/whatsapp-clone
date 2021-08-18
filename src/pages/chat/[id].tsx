@@ -8,7 +8,7 @@ import { useStore } from "stores/store";
 const ChatPage = () => {
   const { selectChat } = useStore().chatStore;
   const { selectRecipient } = useStore().recipientStore;
-  const { loadMessages } = useStore().messageStore;
+  const { loadMessages, messagesRegistery } = useStore().messageStore;
   const id = useRouter().query.id as string;
 
   useEffect(() => {
@@ -20,7 +20,7 @@ const ChatPage = () => {
     if (id) {
       loadData();
     }
-  }, [id, selectChat, selectRecipient, loadMessages]);
+  }, [id, selectChat, selectRecipient, loadMessages, messagesRegistery]);
 
   return (
     <IsAuth>

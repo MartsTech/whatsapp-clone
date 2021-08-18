@@ -7,6 +7,8 @@ import { store } from "./store";
 
 class MessageStore {
   messagesRegistery = new Map<string, ChatMessage>();
+  unsubscribe?: () => void;
+  scrollToBottom = false;
 
   constructor() {
     makeAutoObservable(this);
@@ -19,13 +21,17 @@ class MessageStore {
   loadMessages = (id: string) => {
     this.messagesRegistery.clear();
 
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
+
     const messagesQuery = db
       .collection("chats")
       .doc(id)
       .collection("messages")
       .orderBy("timestamp", "asc");
 
-    messagesQuery.onSnapshot((snapshot) => {
+    const unsubscribe = messagesQuery.onSnapshot((snapshot) => {
       snapshot.docs.forEach((doc) => {
         if (this.messagesRegistery.has(id)) {
           return;
@@ -46,6 +52,8 @@ class MessageStore {
         });
       });
     });
+
+    this.unsubscribe = unsubscribe;
   };
 
   sendMessage = (message: string) => {
@@ -65,6 +73,10 @@ class MessageStore {
     });
 
     return true;
+  };
+
+  setScrollToBottom = (state: boolean) => {
+    this.scrollToBottom = state;
   };
 }
 

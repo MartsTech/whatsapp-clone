@@ -3,7 +3,7 @@ import { useStore } from "stores/store";
 import styled from "styled-components";
 
 const ChatInputField = () => {
-  const { sendMessage } = useStore().messageStore;
+  const { sendMessage, setScrollToBottom } = useStore().messageStore;
   const [input, setInput] = useState("");
 
   const handleSendMessage = (
@@ -18,6 +18,7 @@ const ChatInputField = () => {
 
     if (success) {
       setInput("");
+      setScrollToBottom(true);
     }
   };
 
