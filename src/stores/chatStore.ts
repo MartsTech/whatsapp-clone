@@ -17,25 +17,25 @@ class ChatStore {
 
     reaction(
       () => this.chatsQuery,
-      (chatsQuery) => {
+      async (chatsQuery) => {
         if (!chatsQuery) {
           return;
         }
 
-        chatsQuery.onSnapshot((snapshot) => {
-          snapshot.docs.forEach((doc) => {
-            if (this.chatsRegistery.has(doc.id)) {
-              return;
-            }
+        const chatsSnapshot = await chatsQuery.limit(10).get();
 
-            const chat = {
-              id: doc.id,
-              users: doc.data().users,
-            } as Chat;
+        chatsSnapshot.docs.forEach((doc) => {
+          if (this.chatsRegistery.has(doc.id)) {
+            return;
+          }
 
-            runInAction(() => {
-              this.chatsRegistery.set(chat.id, chat);
-            });
+          const chat = {
+            id: doc.id,
+            users: doc.data().users,
+          } as Chat;
+
+          runInAction(() => {
+            this.chatsRegistery.set(chat.id, chat);
           });
         });
       }
@@ -46,7 +46,7 @@ class ChatStore {
     return Array.from(this.chatsRegistery.values());
   }
 
-  createChat = async () => {
+  createChat = () => {
     const input = prompt(
       "Please enter an email address for the user you wish to chat with."
     );
@@ -72,7 +72,7 @@ class ChatStore {
       return;
     }
 
-    const chatExists = await this.chatExists(user.email, input);
+    const chatExists = this.chatExists(input);
 
     if (chatExists) {
       toast.error("Chat already exists.");
@@ -84,22 +84,9 @@ class ChatStore {
     });
   };
 
-  private chatExists = async (userEmail: string, recipientEmail: string) => {
-    let exists = false;
-
-    exists = !!this.chats.find((chat) => chat.users.includes(recipientEmail));
-
-    if (exists) {
-      return true;
-    }
-
-    const chatsSnapshot = await db
-      .collection("chats")
-      .where("users", "array-contains", userEmail)
-      .get();
-
-    exists = !!chatsSnapshot.docs.find((doc) =>
-      doc.data().users.find((user: string) => user === recipientEmail)
+  private chatExists = (recipientEmail: string) => {
+    const exists = !!this.chats.find((chat) =>
+      chat.users.includes(recipientEmail)
     );
 
     return exists;
@@ -126,6 +113,20 @@ class ChatStore {
     });
 
     return chat;
+  };
+
+  validateChat = async (id: string) => {
+    if (this.chatsRegistery.has(id)) {
+      return true;
+    }
+
+    const chatSnapshot = await db.collection("chats").doc(id).get();
+
+    if (chatSnapshot.exists) {
+      return true;
+    }
+
+    return false;
   };
 
   setChatsQuery = (
