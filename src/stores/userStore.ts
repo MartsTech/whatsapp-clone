@@ -70,7 +70,8 @@ class UserStore {
     this.user = null;
     store.chatStore.setChatsQuery(null);
     store.chatStore.chatsRegistery.clear();
-    store.chatStore.recipientsRegistery.clear();
+    store.recipientStore.recipientsRegistery.clear();
+    store.messageStore.messagesRegistery.clear();
   };
 }
 

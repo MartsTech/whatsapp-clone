@@ -1,4 +1,3 @@
-import { observer } from "mobx-react-lite";
 import styled from "styled-components";
 import ChatHeaderInfo from "./ChatHeaderInfo";
 import ChatHeaderOptions from "./ChatHeaderOptions";
@@ -12,7 +11,7 @@ const ChatHeader = () => {
   );
 };
 
-export default observer(ChatHeader);
+export default ChatHeader;
 
 const StyledHeader = styled.div`
   position: sticky;

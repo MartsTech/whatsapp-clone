@@ -13,7 +13,7 @@ interface SidebarChatsItemProps {
 const SidebarChatsItem: React.FC<SidebarChatsItemProps> = ({ chat }) => {
   const { users, id } = chat;
 
-  const { getRecipientEmail } = useStore().chatStore;
+  const { getRecipientEmail } = useStore().recipientStore;
   const router = useRouter();
 
   const recipientEmail = getRecipientEmail(users);

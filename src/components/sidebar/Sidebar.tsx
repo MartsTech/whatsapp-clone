@@ -6,8 +6,10 @@ import SidebarSearch from "./search/SidebarSearch";
 const Sidebar = () => {
   return (
     <StyledContainer>
-      <SidebarHeader />
-      <SidebarSearch />
+      <StyledTop>
+        <SidebarHeader />
+        <SidebarSearch />
+      </StyledTop>
       <SidebarChats />
     </StyledContainer>
   );
@@ -16,5 +18,23 @@ const Sidebar = () => {
 export default Sidebar;
 
 const StyledContainer = styled.section`
-  width: 20rem;
+  flex: 0.45;
+  border-right: 1px solid whitesmoke;
+  height: 100vh;
+  min-width: 18rem;
+  max-width: 22rem;
+  overflow-y: scroll;
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  --ms-overflow-style: none; /* IE and Edge*/
+  scrollbar-width: none; /* Firefox */
+`;
+
+const StyledTop = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: white;
 `;

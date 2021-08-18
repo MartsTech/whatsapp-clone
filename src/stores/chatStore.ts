@@ -2,16 +2,13 @@ import { db } from "config/firebase";
 import firebase from "firebase/app";
 import { makeAutoObservable, reaction, runInAction } from "mobx";
 import { toast } from "react-toastify";
-import { Chat, ChatMessage, ChatRecipient } from "types/chat";
+import { Chat } from "types/chat";
 import validateEmail from "utils/validateEmail";
 import { store } from "./store";
 
 class ChatStore {
   chatsRegistery = new Map<string, Chat>();
-  recipientsRegistery = new Map<string, ChatRecipient>();
-  messagesRegistery = new Map<string, Map<string, ChatMessage>>();
   selectedChat: Chat | null = null;
-  selectedRecipient: ChatRecipient | null = null;
   chatsQuery: firebase.firestore.Query<firebase.firestore.DocumentData> | null =
     null;
 
@@ -48,41 +45,6 @@ class ChatStore {
   get chats() {
     return Array.from(this.chatsRegistery.values());
   }
-
-  getRecipientEmail = (users: string[]) => {
-    return users?.find((user) => user !== store.userStore.user?.email) || "";
-  };
-
-  getMessages = async (id: string) => {
-    const messages = this.messagesRegistery.get(id);
-
-    if (!messages) {
-      return;
-    }
-
-    const messagesQuery = await db
-      .collection("chats")
-      .doc(id)
-      .collection("messages")
-      .orderBy("timestamp", "asc");
-
-    messagesQuery.onSnapshot((snapshot) => {
-      snapshot.docs.forEach((doc) => {
-        if (messages.has(doc.id)) {
-          return;
-        }
-
-        const message = {
-          id: doc.id,
-          ...doc.data(),
-        } as ChatMessage;
-
-        messages.set(message.id, message);
-      });
-    });
-
-    this.messagesRegistery.set(id, messages);
-  };
 
   createChat = async () => {
     const input = prompt(
@@ -143,60 +105,6 @@ class ChatStore {
     return exists;
   };
 
-  loadRecipient = async (email: string) => {
-    if (this.recipientsRegistery.has(email)) {
-      return this.recipientsRegistery.get(email) as ChatRecipient;
-    }
-
-    let user: ChatRecipient;
-
-    const userSnapshot = await db
-      .collection("users")
-      .where("email", "==", email)
-      .get();
-
-    const userDoc = userSnapshot?.docs?.[0];
-
-    if (userDoc) {
-      user = {
-        ...userDoc.data(),
-      } as ChatRecipient;
-    } else {
-      user = { email };
-    }
-
-    this.recipientsRegistery.set(user.email, user);
-
-    return user;
-  };
-
-  loadMessages = async (id: string) => {
-    if (this.messagesRegistery.has(id)) {
-      return;
-    }
-
-    const messagesSnapshot = await db
-      .collection("chats")
-      .doc(id)
-      .collection("messages")
-      .orderBy("timestamp", "asc")
-      .get();
-
-    const messages = messagesSnapshot.docs
-      .map((doc) => {
-        return {
-          id: doc.id,
-          ...doc.data(),
-        } as ChatMessage;
-      })
-      .map((message) => ({
-        ...message,
-        timestamp: message.timestamp.toDate().getTime(),
-      }));
-
-    this.messagesRegistery.set(id, messages);
-  };
-
   selectChat = async (id: string) => {
     if (this.chatsRegistery.has(id)) {
       this.selectedChat = this.chatsRegistery.get(id) as Chat;
@@ -216,15 +124,6 @@ class ChatStore {
     });
 
     return chat;
-  };
-
-  selectRecipient = async (users: string[]) => {
-    const email = this.getRecipientEmail(users);
-    const recipient = await this.loadRecipient(email);
-
-    runInAction(() => {
-      this.selectedRecipient = recipient;
-    });
   };
 
   setChatsQuery = (

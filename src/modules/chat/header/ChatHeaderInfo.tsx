@@ -4,7 +4,7 @@ import { useStore } from "stores/store";
 import styled from "styled-components";
 
 const ChatHeaderInfo = () => {
-  const { selectedRecipient } = useStore().chatStore;
+  const { selectedRecipient } = useStore().recipientStore;
 
   if (!selectedRecipient) {
     return null;

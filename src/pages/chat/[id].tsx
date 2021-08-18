@@ -5,7 +5,9 @@ import { useEffect } from "react";
 import { useStore } from "stores/store";
 
 const ChatPage = () => {
-  const { selectChat, selectRecipient, loadMessages } = useStore().chatStore;
+  const { selectChat } = useStore().chatStore;
+  const { selectRecipient } = useStore().recipientStore;
+  const { loadMessages } = useStore().messageStore;
   const id = useRouter().query.id as string;
 
   useEffect(() => {
