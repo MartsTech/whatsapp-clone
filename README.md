@@ -41,6 +41,7 @@ Here is a working live demo [here](https://whatsapp-clone-martstech.vercel.app)
 - Realtime Messaging
 - 1-1 Messaging
 - Live Status
+- Pagination
 - Authentication
 - SEO optimization
 
