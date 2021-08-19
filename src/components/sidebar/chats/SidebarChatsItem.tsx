@@ -1,9 +1,9 @@
+import { Avatar } from "@material-ui/core";
 import useChatRecipient from "hooks/useChatRecipient";
 import { useRouter } from "next/router";
 import { useStore } from "stores/store";
 import styled from "styled-components";
 import { Chat } from "types/chat";
-import SidebarChatsItemAvatar from "./SidebarChatsItemAvatar";
 import SidebarChatsItemSkeleton from "./SidebarChatsItemSkeleton";
 
 interface SidebarChatsItemProps {
@@ -23,9 +23,13 @@ const SidebarChatsItem: React.FC<SidebarChatsItemProps> = ({ chat }) => {
     return <SidebarChatsItemSkeleton />;
   }
 
+  const { email, photoURL } = recipient;
+
   return (
     <StyledContainer onClick={() => router.push(`/chat/${id}`)}>
-      <SidebarChatsItemAvatar recipient={recipient} chatId={id} />
+      <StyledAvatar src={photoURL} alt="avatar">
+        {email[0]}
+      </StyledAvatar>
       <StyledEmail>{recipient.email}</StyledEmail>
     </StyledContainer>
   );
@@ -43,6 +47,11 @@ const StyledContainer = styled.div`
   :hover {
     background-color: #e9eaeb;
   }
+`;
+
+const StyledAvatar = styled(Avatar)`
+  margin: 0.25rem 0;
+  text-transform: uppercase;
 `;
 
 const StyledEmail = styled.p`

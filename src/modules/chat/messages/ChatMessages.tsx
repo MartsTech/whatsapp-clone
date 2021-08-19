@@ -20,7 +20,7 @@ const ChatMessages = () => {
 export default observer(ChatMessages);
 
 const StyledContainer = styled.div`
+  flex: 1;
   padding: 2rem;
   background-color: #e5ded8;
-  min-height: 90vh;
 `;

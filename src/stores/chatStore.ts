@@ -54,20 +54,6 @@ class ChatStore {
     );
   }
 
-  getUnseenMessagesCount = (chatId: string) => {
-    const { user } = store.userStore;
-
-    if (!user) {
-      toast.error("An error occurred. Please try again.");
-      return;
-    }
-
-    return this.chatsRegistery
-      .get(chatId)
-      ?.unseenMessages.find((data) => data.user === user.email)?.count;
-  };
-
-  // loading
   loadMore = async () => {
     if (!this.chatsQuery) {
       toast.error("An error occurred. Please try again.");
@@ -172,16 +158,6 @@ class ChatStore {
     db.collection("chats").add({
       users: [user.email, input],
       lastActive: firebase.firestore.FieldValue.serverTimestamp(),
-      unseenMessages: [
-        {
-          user: user.email,
-          count: 0,
-        },
-        {
-          user: input,
-          count: 1,
-        },
-      ],
     });
   };
 
