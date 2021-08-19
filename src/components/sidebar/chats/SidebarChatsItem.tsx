@@ -1,6 +1,7 @@
 import { Avatar } from "@material-ui/core";
 import useChatRecipient from "hooks/useChatRecipient";
 import { useRouter } from "next/router";
+import { forwardRef } from "react";
 import { useStore } from "stores/store";
 import styled from "styled-components";
 import { Chat } from "types/chat";
@@ -10,30 +11,33 @@ interface SidebarChatsItemProps {
   chat: Chat;
 }
 
-const SidebarChatsItem: React.FC<SidebarChatsItemProps> = ({ chat }) => {
-  const { users, id } = chat;
+// eslint-disable-next-line react/display-name
+const SidebarChatsItem: React.FC<SidebarChatsItemProps> = forwardRef(
+  ({ chat }, ref: React.ForwardedRef<HTMLDivElement>) => {
+    const { users, id } = chat;
 
-  const { getRecipientEmail } = useStore().recipientStore;
-  const router = useRouter();
+    const { getRecipientEmail } = useStore().recipientStore;
+    const router = useRouter();
 
-  const recipientEmail = getRecipientEmail(users);
-  const [recipient] = useChatRecipient(recipientEmail);
+    const recipientEmail = getRecipientEmail(users);
+    const [recipient] = useChatRecipient(recipientEmail);
 
-  if (!recipient) {
-    return <SidebarChatsItemSkeleton />;
+    if (!recipient) {
+      return <SidebarChatsItemSkeleton />;
+    }
+
+    const { email, photoURL } = recipient;
+
+    return (
+      <StyledContainer ref={ref} onClick={() => router.push(`/chat/${id}`)}>
+        <StyledAvatar src={photoURL} alt="avatar">
+          {email[0]}
+        </StyledAvatar>
+        <StyledEmail>{recipient.email}</StyledEmail>
+      </StyledContainer>
+    );
   }
-
-  const { email, photoURL } = recipient;
-
-  return (
-    <StyledContainer onClick={() => router.push(`/chat/${id}`)}>
-      <StyledAvatar src={photoURL} alt="avatar">
-        {email[0]}
-      </StyledAvatar>
-      <StyledEmail>{recipient.email}</StyledEmail>
-    </StyledContainer>
-  );
-};
+);
 
 export default SidebarChatsItem;
 

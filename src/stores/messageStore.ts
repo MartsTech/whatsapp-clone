@@ -61,7 +61,7 @@ class MessageStore {
     });
   };
 
-  sendMessage = async (message: string) => {
+  sendMessage = (message: string) => {
     const lastSeenUpdated = store.userStore.updateLastSeen();
     const user = store.userStore.user;
     const chat = store.chatStore.selectedChat;
