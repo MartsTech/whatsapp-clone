@@ -37,6 +37,7 @@ class RecipientStore {
     if (userDoc) {
       user = {
         ...userDoc.data(),
+        lastSeen: userDoc.data().lastSeen?.toDate(),
       } as ChatRecipient;
     } else {
       user = { email };

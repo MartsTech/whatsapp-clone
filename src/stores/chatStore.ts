@@ -52,7 +52,7 @@ class ChatStore {
 
   get chats() {
     return Array.from(this.chatsRegistery.values()).sort(
-      (a, b) => b.lastActive?.toDate() - a.lastActive?.toDate()
+      (a, b) => b.lastActive?.getTime() - a.lastActive?.getTime()
     );
   }
 
@@ -88,7 +88,7 @@ class ChatStore {
       const chat = {
         id: doc.id,
         users: doc.data().users,
-        lastActive: doc.data().lastActive,
+        lastActive: doc.data().lastActive?.toDate(),
       } as Chat;
 
       runInAction(() => {
@@ -155,7 +155,7 @@ class ChatStore {
     const chat = {
       id: chatSnapshot.id,
       users: chatSnapshot.data()?.users,
-      lastActive: chatSnapshot.data()?.lastActive,
+      lastActive: chatSnapshot.data()?.lastActive?.toDate(),
     } as Chat;
 
     runInAction(() => {

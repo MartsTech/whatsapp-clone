@@ -47,14 +47,10 @@ class MessageStore {
           return;
         }
 
-        const data = {
+        const message = {
           id: doc.id,
           ...doc.data(),
-        } as ChatMessage;
-
-        const message = {
-          ...data,
-          timestamp: data.timestamp?.toDate().getTime(),
+          timestamp: doc.data().timestamp?.toDate(),
         } as ChatMessage;
 
         runInAction(() => {
@@ -74,11 +70,21 @@ class MessageStore {
       return false;
     }
 
-    db.collection("chats").doc(chat.id).collection("messages").add({
+    const chatRef = db.collection("chats").doc(chat.id);
+    const timestamp = firebase.firestore.FieldValue.serverTimestamp();
+
+    chatRef.collection("messages").add({
       message,
+      timestamp,
       user: user.email,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
     });
+
+    chatRef.set(
+      {
+        lastActive: timestamp,
+      },
+      { merge: true }
+    );
 
     return true;
   };

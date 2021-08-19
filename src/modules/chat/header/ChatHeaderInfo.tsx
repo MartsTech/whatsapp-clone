@@ -19,7 +19,7 @@ const ChatHeaderInfo = () => {
       <StyledInfo>
         <StyledEmail>{email}</StyledEmail>
         <StyledLastSeen>
-          Last Active: {lastSeen && <TimeAgo datetime={lastSeen.toDate()} />}
+          Last Active: {lastSeen && <TimeAgo datetime={lastSeen} />}
         </StyledLastSeen>
       </StyledInfo>
     </StyledContainer>
