@@ -1,4 +1,3 @@
-import { observer } from "mobx-react-lite";
 import moment from "moment";
 import { forwardRef } from "react";
 import { useStore } from "stores/store";
