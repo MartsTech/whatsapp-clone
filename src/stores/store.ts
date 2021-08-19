@@ -23,3 +23,12 @@ export const StoreContext = createContext(store);
 export const useStore = () => {
   return useContext(StoreContext);
 };
+
+export const resetStore = () => {
+  const { userStore, chatStore, messageStore, recipientStore } = store;
+
+  userStore.reset();
+  chatStore.reset();
+  messageStore.reset();
+  recipientStore.reset();
+};

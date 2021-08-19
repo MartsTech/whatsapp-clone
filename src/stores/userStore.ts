@@ -3,7 +3,7 @@ import firebase from "firebase/app";
 import { makeAutoObservable, reaction, runInAction } from "mobx";
 import { toast } from "react-toastify";
 import { User } from "types/user";
-import { store } from "./store";
+import { resetStore, store } from "./store";
 
 class UserStore {
   user: User | null = null;
@@ -27,6 +27,11 @@ class UserStore {
       }
     );
   }
+
+  reset = () => {
+    this.user = null;
+    this.loading = true;
+  };
 
   signIn = () => {
     this.loading = true;
@@ -62,11 +67,7 @@ class UserStore {
 
   signOut = () => {
     auth.signOut();
-    this.user = null;
-    store.chatStore.setChatsQuery(null);
-    store.chatStore.chatsRegistery.clear();
-    store.recipientStore.recipientsRegistery.clear();
-    store.messageStore.messagesRegistery.clear();
+    resetStore();
   };
 
   updateLastSeen = () => {

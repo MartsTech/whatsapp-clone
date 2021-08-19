@@ -8,11 +8,13 @@ import { store } from "./store";
 
 class ChatStore {
   chatsRegistery = new Map<string, Chat>();
-  lastChat = 0;
-  hasMore = false;
+  chatsLimit = 9;
+  hasMore = true;
+  lastChatTimestamp: any = null;
   selectedChat: Chat | null = null;
   chatsQuery: firebase.firestore.Query<firebase.firestore.DocumentData> | null =
     null;
+  unsubscribeChatsSnapshot?: () => void;
 
   constructor() {
     makeAutoObservable(this);
@@ -24,22 +26,34 @@ class ChatStore {
           return;
         }
 
-        chatsQuery
+        this.unsubscribeChatsSnapshot = chatsQuery
           .orderBy("lastActive", "desc")
-          .limit(10)
+          .limit(this.chatsLimit)
           .onSnapshot((snapshot) => {
             this.setChatsFromSnapshot(snapshot);
           });
-
-        runInAction(() => {
-          this.lastChat = this.lastChat + 9;
-        });
       }
     );
   }
 
+  reset = () => {
+    this.chatsRegistery.clear();
+    this.chatsLimit = 9;
+    this.hasMore = true;
+    this.lastChatTimestamp = null;
+    this.selectedChat = null;
+    this.chatsQuery = null;
+
+    if (this.unsubscribeChatsSnapshot) {
+      this.unsubscribeChatsSnapshot();
+      this.unsubscribeChatsSnapshot = undefined;
+    }
+  };
+
   get chats() {
-    return Array.from(this.chatsRegistery.values());
+    return Array.from(this.chatsRegistery.values()).sort(
+      (a, b) => b.lastActive?.toDate() - a.lastActive?.toDate()
+    );
   }
 
   loadMore = async () => {
@@ -50,9 +64,15 @@ class ChatStore {
 
     const chatsSnapshot = await this.chatsQuery
       .orderBy("lastActive", "desc")
-      .startAfter(this.lastChat)
-      .limit(9)
+      .startAfter(this.lastChatTimestamp)
+      .limit(this.chatsLimit)
       .get();
+
+    if (chatsSnapshot.size < this.chatsLimit) {
+      runInAction(() => {
+        this.hasMore = false;
+      });
+    }
 
     this.setChatsFromSnapshot(chatsSnapshot);
   };
@@ -61,8 +81,8 @@ class ChatStore {
     chatsSnapshot: firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>
   ) => {
     chatsSnapshot?.docs?.forEach((doc) => {
-      if (this.chatsRegistery.has(doc.id)) {
-        return;
+      if (!this.chatsRegistery.has(doc.id)) {
+        this.lastChatTimestamp = doc.data().lastActive;
       }
 
       const chat = {
