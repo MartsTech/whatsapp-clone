@@ -2,7 +2,7 @@ import { db } from "config/firebase";
 import firebase from "firebase/app";
 import { makeAutoObservable, runInAction } from "mobx";
 import { toast } from "react-toastify";
-import { ChatMessage } from "types/chat";
+import { Chat, ChatMessage } from "types/chat";
 import { store } from "./store";
 
 class MessageStore {
@@ -49,7 +49,8 @@ class MessageStore {
 
         const message = {
           id: doc.id,
-          ...doc.data(),
+          message: doc.data().message,
+          user: doc.data().user,
           timestamp: doc.data().timestamp?.toDate(),
         } as ChatMessage;
 
@@ -60,12 +61,13 @@ class MessageStore {
     });
   };
 
-  sendMessage = (message: string) => {
+  sendMessage = async (message: string) => {
+    const lastSeenUpdated = store.userStore.updateLastSeen();
     const user = store.userStore.user;
     const chat = store.chatStore.selectedChat;
-    const lastSeenUpdated = store.userStore.updateLastSeen();
+    const recipient = store.recipientStore.selectedRecipient;
 
-    if (!chat || !user || !lastSeenUpdated) {
+    if (!lastSeenUpdated || !user || !chat || !recipient) {
       toast.error("An error occurred. Please try again.");
       return false;
     }
@@ -73,7 +75,7 @@ class MessageStore {
     const chatRef = db.collection("chats").doc(chat.id);
     const timestamp = firebase.firestore.FieldValue.serverTimestamp();
 
-    chatRef.collection("messages").add({
+    await chatRef.collection("messages").add({
       message,
       timestamp,
       user: user.email,
@@ -86,7 +88,40 @@ class MessageStore {
       { merge: true }
     );
 
+    await this.updateUnseenMessages(chatRef, user.email);
+
     return true;
+  };
+
+  private updateUnseenMessages = async (
+    chatRef: firebase.firestore.DocumentReference<firebase.firestore.DocumentData>,
+    userEmail: string
+  ) => {
+    const chatSnapshot = await chatRef.get();
+
+    const unseenMessages: Chat["unseenMessages"] =
+      chatSnapshot.data()!.unseenMessages;
+
+    const senderUnseenMessages = unseenMessages.find(
+      (data) => data.user === userEmail
+    );
+
+    const recipientUnseenMessages = unseenMessages.find(
+      (data) => data.user !== userEmail
+    );
+
+    chatRef.set(
+      {
+        unseenMessages: [
+          senderUnseenMessages,
+          {
+            user: recipientUnseenMessages!.user,
+            count: recipientUnseenMessages!.count + 1,
+          },
+        ],
+      },
+      { merge: true }
+    );
   };
 
   setScrollToBottom = (state: boolean) => {

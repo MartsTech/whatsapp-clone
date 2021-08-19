@@ -1,6 +1,7 @@
 export interface Chat {
   id: string;
   users: string[];
+  unseenMessages: [{ user: string; count: number }];
   lastActive: Date;
 }
 
