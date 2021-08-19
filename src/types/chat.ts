@@ -1,18 +1,18 @@
 export interface Chat {
   id: string;
   users: string[];
-  lastActive: any;
+  lastActive: Date;
 }
 
 export interface ChatRecipient {
   email: string;
   photoURL?: string;
-  lastSeen?: any;
+  lastSeen?: Date;
 }
 
 export interface ChatMessage {
   id: string;
   message: string;
   user: string;
-  timestamp: any;
+  timestamp: Date;
 }

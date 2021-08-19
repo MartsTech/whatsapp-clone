@@ -8,10 +8,10 @@ import { store } from "./store";
 
 class ChatStore {
   chatsRegistery = new Map<string, Chat>();
-  chatsLimit = 9;
-  hasMore = true;
-  lastChatTimestamp: any = null;
   selectedChat: Chat | null = null;
+  chatsLimit = 9;
+  hasMore = false;
+  lastChatTimestamp: firebase.firestore.FieldValue | null = null;
   chatsQuery: firebase.firestore.Query<firebase.firestore.DocumentData> | null =
     null;
   unsubscribeChatsSnapshot?: () => void;
@@ -22,26 +22,24 @@ class ChatStore {
     reaction(
       () => this.chatsQuery,
       async (chatsQuery) => {
-        if (!chatsQuery) {
-          return;
+        if (chatsQuery) {
+          this.unsubscribeChatsSnapshot = chatsQuery
+            .orderBy("lastActive", "desc")
+            .limit(this.chatsLimit)
+            .onSnapshot((snapshot) => {
+              this.setChatsFromSnapshot(snapshot);
+            });
         }
-
-        this.unsubscribeChatsSnapshot = chatsQuery
-          .orderBy("lastActive", "desc")
-          .limit(this.chatsLimit)
-          .onSnapshot((snapshot) => {
-            this.setChatsFromSnapshot(snapshot);
-          });
       }
     );
   }
 
   reset = () => {
     this.chatsRegistery.clear();
-    this.chatsLimit = 9;
-    this.hasMore = true;
-    this.lastChatTimestamp = null;
     this.selectedChat = null;
+    this.chatsLimit = 9;
+    this.hasMore = false;
+    this.lastChatTimestamp = null;
     this.chatsQuery = null;
 
     if (this.unsubscribeChatsSnapshot) {
@@ -52,7 +50,7 @@ class ChatStore {
 
   get chats() {
     return Array.from(this.chatsRegistery.values()).sort(
-      (a, b) => b.lastActive?.toDate() - a.lastActive?.toDate()
+      (a, b) => b.lastActive?.getTime() - a.lastActive?.getTime()
     );
   }
 
@@ -68,18 +66,18 @@ class ChatStore {
       .limit(this.chatsLimit)
       .get();
 
-    if (chatsSnapshot.size < this.chatsLimit) {
-      runInAction(() => {
-        this.hasMore = false;
-      });
-    }
-
     this.setChatsFromSnapshot(chatsSnapshot);
   };
 
   private setChatsFromSnapshot = (
     chatsSnapshot: firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>
   ) => {
+    if (chatsSnapshot.size < this.chatsLimit) {
+      this.hasMore = false;
+    } else {
+      this.hasMore = true;
+    }
+
     chatsSnapshot?.docs?.forEach((doc) => {
       if (!this.chatsRegistery.has(doc.id)) {
         this.lastChatTimestamp = doc.data().lastActive;
@@ -88,16 +86,43 @@ class ChatStore {
       const chat = {
         id: doc.id,
         users: doc.data().users,
-        lastActive: doc.data().lastActive,
+        lastActive: doc.data().lastActive?.toDate(),
+        unseenMessages: doc.data().unseenMessages,
       } as Chat;
 
-      runInAction(() => {
-        this.chatsRegistery.set(chat.id, chat);
-      });
+      this.chatsRegistery.set(chat.id, chat);
     });
   };
 
-  createChat = () => {
+  selectChat = async (id: string) => {
+    if (this.chatsRegistery.has(id)) {
+      this.selectedChat = this.chatsRegistery.get(id) as Chat;
+      return this.selectedChat;
+    }
+
+    const chatSnapshot = await db.collection("chats").doc(id).get();
+
+    if (!chatSnapshot.exists) {
+      this.selectedChat = null;
+      return null;
+    }
+
+    const chat = {
+      id: chatSnapshot.id,
+      users: chatSnapshot.data()?.users,
+      lastActive: chatSnapshot.data()?.lastActive?.toDate(),
+      unseenMessages: chatSnapshot.data()?.unseenMessages,
+    } as Chat;
+
+    runInAction(() => {
+      this.chatsRegistery.set(id, chat);
+      this.selectedChat = chat;
+    });
+
+    return chat;
+  };
+
+  createChat = async () => {
     const input = prompt(
       "Please enter an email address for the user you wish to chat with."
     );
@@ -123,7 +148,7 @@ class ChatStore {
       return;
     }
 
-    const chatExists = this.chatExists(input);
+    const chatExists = await this.chatExists(input);
 
     if (chatExists) {
       toast.error("Chat already exists.");
@@ -136,36 +161,31 @@ class ChatStore {
     });
   };
 
-  private chatExists = (recipientEmail: string) => {
-    const exists = !!this.chats.find((chat) =>
+  private chatExists = async (recipientEmail: string) => {
+    let exists = !!this.chats.find((chat) =>
       chat.users.includes(recipientEmail)
     );
 
-    return exists;
-  };
-
-  selectChat = async (id: string) => {
-    if (this.chatsRegistery.has(id)) {
-      this.selectedChat = this.chatsRegistery.get(id) as Chat;
-      return this.selectedChat;
+    if (exists) {
+      return true;
     }
 
-    const chatSnapshot = await db.collection("chats").doc(id).get();
+    if (!this.chatsQuery) {
+      toast.error("An error occurred. Please try again.");
+      return true;
+    }
 
-    const chat = {
-      id: chatSnapshot.id,
-      users: chatSnapshot.data()?.users,
-      lastActive: chatSnapshot.data()?.lastActive,
-    } as Chat;
+    const chatsSnapshot = await this.chatsQuery.get();
 
-    runInAction(() => {
-      if (chat.users) {
-        this.chatsRegistery.set(id, chat);
-        this.selectedChat = chat;
-      }
-    });
+    exists = !!chatsSnapshot.docs.find((doc) =>
+      doc.data().users.find((user: string) => user === recipientEmail)
+    );
 
-    return chat;
+    if (exists) {
+      return true;
+    }
+
+    return false;
   };
 
   validateChat = async (id: string) => {

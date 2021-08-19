@@ -1,30 +1,33 @@
-import { observer } from "mobx-react-lite";
+import moment from "moment";
+import { forwardRef } from "react";
 import { useStore } from "stores/store";
 import styled from "styled-components";
 import { ChatMessage } from "types/chat";
-import moment from "moment";
 
 interface ChatMessagesItemProps {
   data: ChatMessage;
 }
 
-const ChatMessagesItem: React.FC<ChatMessagesItemProps> = ({ data }) => {
-  const email = useStore().userStore.user!.email;
-  const { message, user, timestamp } = data;
+// eslint-disable-next-line react/display-name
+const ChatMessagesItem: React.FC<ChatMessagesItemProps> = forwardRef(
+  ({ data }, ref: any) => {
+    const email = useStore().userStore.user!.email;
+    const { message, user, timestamp } = data;
 
-  const MessageType = user === email ? StyledSender : StyledReceiver;
+    const MessageType = user === email ? StyledSender : StyledReceiver;
 
-  return (
-    <StyledContainer>
-      <MessageType>
-        {message}
-        <StyledTimestamp>{moment(timestamp).format("LT")}</StyledTimestamp>
-      </MessageType>
-    </StyledContainer>
-  );
-};
+    return (
+      <StyledContainer ref={ref}>
+        <MessageType>
+          {message}
+          <StyledTimestamp>{moment(timestamp).format("LT")}</StyledTimestamp>
+        </MessageType>
+      </StyledContainer>
+    );
+  }
+);
 
-export default observer(ChatMessagesItem);
+export default ChatMessagesItem;
 
 const StyledContainer = styled.div``;
 

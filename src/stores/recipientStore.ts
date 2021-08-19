@@ -36,7 +36,9 @@ class RecipientStore {
 
     if (userDoc) {
       user = {
-        ...userDoc.data(),
+        email: userDoc.data().email,
+        photoURL: userDoc.data().photoURL,
+        lastSeen: userDoc.data().lastSeen?.toDate(),
       } as ChatRecipient;
     } else {
       user = { email };

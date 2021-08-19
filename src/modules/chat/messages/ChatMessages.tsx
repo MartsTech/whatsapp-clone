@@ -1,4 +1,5 @@
 import { observer } from "mobx-react-lite";
+import FlipMove from "react-flip-move";
 import { useStore } from "stores/store";
 import styled from "styled-components";
 import ChatMessagesEnd from "./ChatMessagesEnd";
@@ -9,9 +10,11 @@ const ChatMessages = () => {
 
   return (
     <StyledContainer>
-      {messages.map((message) => (
-        <ChatMessagesItem key={message.id} data={message} />
-      ))}
+      <FlipMove>
+        {messages.map((message) => (
+          <ChatMessagesItem key={message.id} data={message} />
+        ))}
+      </FlipMove>
       <ChatMessagesEnd />
     </StyledContainer>
   );
@@ -20,7 +23,7 @@ const ChatMessages = () => {
 export default observer(ChatMessages);
 
 const StyledContainer = styled.div`
+  flex: 1;
   padding: 2rem;
   background-color: #e5ded8;
-  min-height: 90vh;
 `;

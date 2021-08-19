@@ -22,6 +22,8 @@ const StyledContainer = styled.section`
   flex: 1;
   overflow: scroll;
   height: 100vh;
+  display: flex;
+  flex-direction: column;
 
   ::-webkit-scrollbar {
     display: none;

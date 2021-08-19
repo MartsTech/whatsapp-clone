@@ -47,14 +47,11 @@ class MessageStore {
           return;
         }
 
-        const data = {
-          id: doc.id,
-          ...doc.data(),
-        } as ChatMessage;
-
         const message = {
-          ...data,
-          timestamp: data.timestamp?.toDate().getTime(),
+          id: doc.id,
+          message: doc.data().message,
+          user: doc.data().user,
+          timestamp: doc.data().timestamp?.toDate(),
         } as ChatMessage;
 
         runInAction(() => {
@@ -65,20 +62,30 @@ class MessageStore {
   };
 
   sendMessage = (message: string) => {
+    const lastSeenUpdated = store.userStore.updateLastSeen();
     const user = store.userStore.user;
     const chat = store.chatStore.selectedChat;
-    const lastSeenUpdated = store.userStore.updateLastSeen();
 
-    if (!chat || !user || !lastSeenUpdated) {
+    if (!lastSeenUpdated || !user || !chat) {
       toast.error("An error occurred. Please try again.");
       return false;
     }
 
-    db.collection("chats").doc(chat.id).collection("messages").add({
+    const chatRef = db.collection("chats").doc(chat.id);
+    const timestamp = firebase.firestore.FieldValue.serverTimestamp();
+
+    chatRef.collection("messages").add({
       message,
+      timestamp,
       user: user.email,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
     });
+
+    chatRef.set(
+      {
+        lastActive: timestamp,
+      },
+      { merge: true }
+    );
 
     return true;
   };
