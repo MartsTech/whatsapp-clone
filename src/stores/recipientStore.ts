@@ -11,6 +11,11 @@ class RecipientStore {
     makeAutoObservable(this);
   }
 
+  reset = () => {
+    this.recipientsRegistery.clear();
+    this.selectedRecipient = null;
+  };
+
   getRecipientEmail = (users: string[]) => {
     return users?.find((user) => user !== store.userStore.user?.email) || "";
   };

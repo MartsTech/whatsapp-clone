@@ -7,12 +7,22 @@ import { store } from "./store";
 
 class MessageStore {
   messagesRegistery = new Map<string, ChatMessage>();
-  unsubscribe?: () => void;
   scrollToBottom = false;
+  unsubscribeMessagesSnapshot?: () => void;
 
   constructor() {
     makeAutoObservable(this);
   }
+
+  reset = () => {
+    this.messagesRegistery.clear();
+    this.scrollToBottom = false;
+
+    if (this.unsubscribeMessagesSnapshot) {
+      this.unsubscribeMessagesSnapshot();
+      this.unsubscribeMessagesSnapshot = undefined;
+    }
+  };
 
   get messages() {
     return Array.from(this.messagesRegistery.values());
@@ -21,8 +31,8 @@ class MessageStore {
   loadMessages = (id: string) => {
     this.messagesRegistery.clear();
 
-    if (this.unsubscribe) {
-      this.unsubscribe();
+    if (this.unsubscribeMessagesSnapshot) {
+      this.unsubscribeMessagesSnapshot();
     }
 
     const messagesQuery = db
@@ -31,7 +41,7 @@ class MessageStore {
       .collection("messages")
       .orderBy("timestamp", "asc");
 
-    const unsubscribe = messagesQuery.onSnapshot((snapshot) => {
+    this.unsubscribeMessagesSnapshot = messagesQuery.onSnapshot((snapshot) => {
       snapshot.docs.forEach((doc) => {
         if (this.messagesRegistery.has(id)) {
           return;
@@ -52,8 +62,6 @@ class MessageStore {
         });
       });
     });
-
-    this.unsubscribe = unsubscribe;
   };
 
   sendMessage = (message: string) => {
