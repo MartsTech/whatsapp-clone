@@ -9,8 +9,8 @@ import { store } from "./store";
 class ChatStore {
   chatsRegistery = new Map<string, Chat>();
   chatsLimit = 9;
-  hasMore = true;
-  lastChatTimestamp: any = null;
+  hasMore = false;
+  lastChatTimestamp: firebase.firestore.FieldValue | null = null;
   selectedChat: Chat | null = null;
   chatsQuery: firebase.firestore.Query<firebase.firestore.DocumentData> | null =
     null;
@@ -39,7 +39,7 @@ class ChatStore {
   reset = () => {
     this.chatsRegistery.clear();
     this.chatsLimit = 9;
-    this.hasMore = true;
+    this.hasMore = false;
     this.lastChatTimestamp = null;
     this.selectedChat = null;
     this.chatsQuery = null;
@@ -68,18 +68,18 @@ class ChatStore {
       .limit(this.chatsLimit)
       .get();
 
-    if (chatsSnapshot.size < this.chatsLimit) {
-      runInAction(() => {
-        this.hasMore = false;
-      });
-    }
-
     this.setChatsFromSnapshot(chatsSnapshot);
   };
 
   private setChatsFromSnapshot = (
     chatsSnapshot: firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>
   ) => {
+    if (chatsSnapshot.size < this.chatsLimit) {
+      this.hasMore = false;
+    } else {
+      this.hasMore = true;
+    }
+
     chatsSnapshot?.docs?.forEach((doc) => {
       if (!this.chatsRegistery.has(doc.id)) {
         this.lastChatTimestamp = doc.data().lastActive;
@@ -91,9 +91,7 @@ class ChatStore {
         lastActive: doc.data().lastActive?.toDate(),
       } as Chat;
 
-      runInAction(() => {
-        this.chatsRegistery.set(chat.id, chat);
-      });
+      this.chatsRegistery.set(chat.id, chat);
     });
   };
 
@@ -138,7 +136,7 @@ class ChatStore {
 
   private chatExists = (recipientEmail: string) => {
     const exists = !!this.chats.find((chat) =>
-      chat.users.includes(recipientEmail)
+    chat.users.includes(recipientEmail)
     );
 
     return exists;
@@ -152,6 +150,11 @@ class ChatStore {
 
     const chatSnapshot = await db.collection("chats").doc(id).get();
 
+    if (!chatSnapshot.exists) {
+      this.selectedChat = null;
+      return null;
+    }
+
     const chat = {
       id: chatSnapshot.id,
       users: chatSnapshot.data()?.users,
@@ -159,10 +162,8 @@ class ChatStore {
     } as Chat;
 
     runInAction(() => {
-      if (chat.users) {
-        this.chatsRegistery.set(id, chat);
-        this.selectedChat = chat;
-      }
+      this.chatsRegistery.set(id, chat);
+      this.selectedChat = chat;
     });
 
     return chat;

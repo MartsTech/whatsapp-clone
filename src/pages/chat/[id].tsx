@@ -15,7 +15,10 @@ const ChatPage = () => {
     const loadData = async () => {
       loadMessages(id);
       const chat = await selectChat(id);
-      await selectRecipient(chat.users);
+
+      if (chat) {
+        await selectRecipient(chat.users);
+      }
     };
     if (id) {
       loadData();

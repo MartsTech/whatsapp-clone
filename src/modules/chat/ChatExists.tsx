@@ -21,7 +21,9 @@ const ChatExists: React.FC<ChatExistsProps> = ({ children, id }) => {
         router.push("/");
       }
     };
-    handleValidateChat();
+    if (id) {
+      handleValidateChat();
+    }
   }, [id, validateChat, router]);
 
   if (exists) {

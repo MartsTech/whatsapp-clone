@@ -4,9 +4,9 @@ import { useStore } from "stores/store";
 import styled from "styled-components";
 
 const SidebarLoadMore = () => {
-  const { loadMore, hasMore, chats, chatsLimit } = useStore().chatStore;
+  const { hasMore, loadMore } = useStore().chatStore;
 
-  if (!hasMore || chats.length < chatsLimit) return null;
+  if (!hasMore) return null;
 
   return <StyledButton onClick={loadMore}>Load more</StyledButton>;
 };
