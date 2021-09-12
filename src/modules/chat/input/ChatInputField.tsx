@@ -6,7 +6,7 @@ const ChatInputField = () => {
   const { sendMessage, setScrollToBottom } = useStore().messageStore;
   const [input, setInput] = useState("");
 
-  const handleSendMessage = (
+  const handleSendMessage = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     e.preventDefault();
@@ -14,7 +14,7 @@ const ChatInputField = () => {
     if (input === "") {
       return;
     }
-    const success = sendMessage(input);
+    const success = await sendMessage(input);
 
     if (success) {
       setInput("");
