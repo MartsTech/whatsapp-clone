@@ -1,5 +1,14 @@
 import { db } from "config/firebase";
-import firebase from "firebase/app";
+import {
+  addDoc,
+  collection,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
 import { makeAutoObservable, runInAction } from "mobx";
 import { toast } from "react-toastify";
 import { ChatMessage } from "types/chat";
@@ -35,13 +44,14 @@ class MessageStore {
       this.unsubscribeMessagesSnapshot();
     }
 
-    const messagesQuery = db
-      .collection("chats")
-      .doc(id)
-      .collection("messages")
-      .orderBy("timestamp", "asc");
+    const chatRef = doc(db, "chats", id);
 
-    this.unsubscribeMessagesSnapshot = messagesQuery.onSnapshot((snapshot) => {
+    const messagesQuery = query(
+      collection(chatRef, "messages"),
+      orderBy("timestamp", "asc")
+    );
+
+    this.unsubscribeMessagesSnapshot = onSnapshot(messagesQuery, (snapshot) => {
       snapshot.docs.forEach((doc) => {
         if (this.messagesRegistery.has(id)) {
           return;
@@ -51,7 +61,7 @@ class MessageStore {
           id: doc.id,
           message: doc.data().message,
           user: doc.data().user,
-          timestamp: doc.data().timestamp?.toDate(),
+          timestamp: new Date(doc.data().timestamp?.toDate()),
         } as ChatMessage;
 
         runInAction(() => {
@@ -61,9 +71,9 @@ class MessageStore {
     });
   };
 
-  sendMessage = (message: string) => {
+  sendMessage = async (message: string) => {
     const lastSeenUpdated = store.userStore.updateLastSeen();
-    const user = store.userStore.user;
+    const { user } = store.userStore;
     const chat = store.chatStore.selectedChat;
 
     if (!lastSeenUpdated || !user || !chat) {
@@ -71,16 +81,19 @@ class MessageStore {
       return false;
     }
 
-    const chatRef = db.collection("chats").doc(chat.id);
-    const timestamp = firebase.firestore.FieldValue.serverTimestamp();
+    const chatRef = doc(db, "chats", chat.id);
+    const messagesRef = collection(chatRef, "messages");
 
-    chatRef.collection("messages").add({
+    const timestamp = serverTimestamp();
+
+    await addDoc(messagesRef, {
       message,
       timestamp,
       user: user.email,
     });
 
-    chatRef.set(
+    await setDoc(
+      chatRef,
       {
         lastActive: timestamp,
       },

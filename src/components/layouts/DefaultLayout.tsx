@@ -1,4 +1,5 @@
 import Sidebar from "components/sidebar/Sidebar";
+import React from "react";
 import styled from "styled-components";
 
 const DefaultLayout: React.FC = ({ children }) => {

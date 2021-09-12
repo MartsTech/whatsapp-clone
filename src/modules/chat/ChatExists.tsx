@@ -1,6 +1,6 @@
 import Loading from "components/loading/Loading";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useStore } from "stores/store";
 
 interface ChatExistsProps {

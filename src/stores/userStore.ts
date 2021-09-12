@@ -1,6 +1,21 @@
-import { auth, db, provider } from "config/firebase";
-import firebase from "firebase/app";
-import { makeAutoObservable, reaction, runInAction } from "mobx";
+import { auth, db } from "config/firebase";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut as signOutAuth,
+  User as FirebaseUser,
+} from "firebase/auth";
+import {
+  collection,
+  doc,
+  limit,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+  where,
+} from "firebase/firestore";
+import { makeAutoObservable, reaction } from "mobx";
 import { toast } from "react-toastify";
 import { User } from "types/user";
 import { resetStore, store } from "./store";
@@ -19,9 +34,12 @@ class UserStore {
           return;
         }
 
-        const chatsQuery = db
-          .collection("chats")
-          .where("users", "array-contains", user.email);
+        const chatsQuery = query(
+          collection(db, "chats"),
+          where("users", "array-contains", user.email),
+          orderBy("lastActive", "desc"),
+          limit(store.chatStore.chatsLimit)
+        );
 
         store.chatStore.setChatsQuery(chatsQuery);
       }
@@ -36,23 +54,17 @@ class UserStore {
   signIn = () => {
     this.loading = true;
 
-    auth
-      .signInWithPopup(provider)
+    signInWithPopup(auth, new GoogleAuthProvider())
       .then(({ user }) => {
         if (user) {
-          runInAction(() => {
-            this.user = {
-              uid: user.uid,
-              email: user.email!,
-              photoURL: user.photoURL!,
-            };
-          });
+          this.setUser(user);
 
-          db.collection("users").doc(user.uid).set(
+          setDoc(
+            doc(db, "users", user.uid),
             {
               email: user.email,
               photoURL: user.photoURL,
-              lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+              lastSeen: serverTimestamp(),
             },
             { merge: true }
           );
@@ -66,8 +78,10 @@ class UserStore {
   };
 
   signOut = () => {
-    auth.signOut();
-    resetStore();
+    if (this.user) {
+      signOutAuth(auth);
+      resetStore();
+    }
   };
 
   updateLastSeen = () => {
@@ -75,9 +89,10 @@ class UserStore {
       return false;
     }
 
-    db.collection("users").doc(this.user.uid).set(
+    setDoc(
+      doc(db, "users", this.user.uid),
       {
-        lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+        lastSeen: serverTimestamp(),
       },
       { merge: true }
     );
@@ -85,8 +100,17 @@ class UserStore {
     return true;
   };
 
-  setUser = (user: User | null) => {
-    this.user = user;
+  setUser = (user: FirebaseUser | null) => {
+    if (user) {
+      this.user = {
+        uid: user.uid,
+        email: user.email!,
+        photoURL: user.photoURL!,
+      };
+    } else {
+      this.user = null;
+    }
+
     this.loading = false;
   };
 }

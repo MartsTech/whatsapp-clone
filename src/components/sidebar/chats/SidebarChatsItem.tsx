@@ -1,7 +1,7 @@
 import { Avatar } from "@material-ui/core";
 import useChatRecipient from "hooks/useChatRecipient";
 import { useRouter } from "next/router";
-import { forwardRef } from "react";
+import React, { forwardRef } from "react";
 import { useStore } from "stores/store";
 import styled from "styled-components";
 import { Chat } from "types/chat";

@@ -1,5 +1,5 @@
 import moment from "moment";
-import { forwardRef } from "react";
+import React, { forwardRef } from "react";
 import { useStore } from "stores/store";
 import styled from "styled-components";
 import { ChatMessage } from "types/chat";

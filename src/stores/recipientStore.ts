@@ -1,4 +1,5 @@
 import { db } from "config/firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { makeAutoObservable, runInAction } from "mobx";
 import { ChatRecipient } from "types/chat";
 import { store } from "./store";
@@ -16,9 +17,8 @@ class RecipientStore {
     this.selectedRecipient = null;
   };
 
-  getRecipientEmail = (users: string[]) => {
-    return users?.find((user) => user !== store.userStore.user?.email) || "";
-  };
+  getRecipientEmail = (users: string[]) =>
+    users?.find((user) => user !== store.userStore.user?.email) || "";
 
   loadRecipient = async (email: string) => {
     if (this.recipientsRegistery.has(email)) {
@@ -27,10 +27,12 @@ class RecipientStore {
 
     let user: ChatRecipient;
 
-    const userSnapshot = await db
-      .collection("users")
-      .where("email", "==", email)
-      .get();
+    const usersQuery = query(
+      collection(db, "users"),
+      where("email", "==", email)
+    );
+
+    const userSnapshot = await getDocs(usersQuery);
 
     const userDoc = userSnapshot?.docs?.[0];
 
@@ -38,7 +40,7 @@ class RecipientStore {
       user = {
         email: userDoc.data().email,
         photoURL: userDoc.data().photoURL,
-        lastSeen: userDoc.data().lastSeen?.toDate(),
+        lastSeen: new Date(userDoc.data().lastSeen?.toDate()),
       } as ChatRecipient;
     } else {
       user = { email };

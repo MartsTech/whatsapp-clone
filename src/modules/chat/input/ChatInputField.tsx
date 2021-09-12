@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useStore } from "stores/store";
 import styled from "styled-components";
 

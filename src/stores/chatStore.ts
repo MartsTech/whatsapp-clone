@@ -1,5 +1,22 @@
 import { db } from "config/firebase";
-import firebase from "firebase/app";
+import {
+  addDoc,
+  collection,
+  doc,
+  DocumentData,
+  FieldValue,
+  getDoc,
+  getDocs,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  Query,
+  QuerySnapshot,
+  serverTimestamp,
+  startAfter,
+  where,
+} from "firebase/firestore";
 import { makeAutoObservable, reaction, runInAction } from "mobx";
 import { toast } from "react-toastify";
 import { Chat } from "types/chat";
@@ -11,9 +28,8 @@ class ChatStore {
   selectedChat: Chat | null = null;
   chatsLimit = 9;
   hasMore = false;
-  lastChatTimestamp: firebase.firestore.FieldValue | null = null;
-  chatsQuery: firebase.firestore.Query<firebase.firestore.DocumentData> | null =
-    null;
+  lastChatTimestamp: FieldValue | null = null;
+  chatsQuery: Query<DocumentData> | null = null;
   unsubscribeChatsSnapshot?: () => void;
 
   constructor() {
@@ -23,12 +39,9 @@ class ChatStore {
       () => this.chatsQuery,
       async (chatsQuery) => {
         if (chatsQuery) {
-          this.unsubscribeChatsSnapshot = chatsQuery
-            .orderBy("lastActive", "desc")
-            .limit(this.chatsLimit)
-            .onSnapshot((snapshot) => {
-              this.setChatsFromSnapshot(snapshot);
-            });
+          this.unsubscribeChatsSnapshot = onSnapshot(chatsQuery, (snapshot) => {
+            this.setChatsFromSnapshot(snapshot);
+          });
         }
       }
     );
@@ -55,22 +68,27 @@ class ChatStore {
   }
 
   loadMore = async () => {
-    if (!this.chatsQuery) {
+    const { user } = store.userStore;
+
+    if (!this.chatsQuery || !user) {
       toast.error("An error occurred. Please try again.");
       return;
     }
 
-    const chatsSnapshot = await this.chatsQuery
-      .orderBy("lastActive", "desc")
-      .startAfter(this.lastChatTimestamp)
-      .limit(this.chatsLimit)
-      .get();
+    const newChatsQuery = query(
+      collection(db, "chats"),
+      where("users", "array-contains", user.email),
+      orderBy("lastActive", "desc"),
+      startAfter(this.lastChatTimestamp),
+      limit(store.chatStore.chatsLimit)
+    );
 
+    const chatsSnapshot = await getDocs(newChatsQuery);
     this.setChatsFromSnapshot(chatsSnapshot);
   };
 
   private setChatsFromSnapshot = (
-    chatsSnapshot: firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>
+    chatsSnapshot: QuerySnapshot<DocumentData>
   ) => {
     if (chatsSnapshot.size < this.chatsLimit) {
       this.hasMore = false;
@@ -86,7 +104,7 @@ class ChatStore {
       const chat = {
         id: doc.id,
         users: doc.data().users,
-        lastActive: doc.data().lastActive?.toDate(),
+        lastActive: new Date(doc.data().lastActive?.toDate()),
         unseenMessages: doc.data().unseenMessages,
       } as Chat;
 
@@ -100,7 +118,8 @@ class ChatStore {
       return this.selectedChat;
     }
 
-    const chatSnapshot = await db.collection("chats").doc(id).get();
+    const chatRef = doc(db, "chats", id);
+    const chatSnapshot = await getDoc(chatRef);
 
     if (!chatSnapshot.exists) {
       this.selectedChat = null;
@@ -110,7 +129,7 @@ class ChatStore {
     const chat = {
       id: chatSnapshot.id,
       users: chatSnapshot.data()?.users,
-      lastActive: chatSnapshot.data()?.lastActive?.toDate(),
+      lastActive: new Date(chatSnapshot.data()?.lastActive?.toDate()),
       unseenMessages: chatSnapshot.data()?.unseenMessages,
     } as Chat;
 
@@ -155,14 +174,14 @@ class ChatStore {
       return;
     }
 
-    db.collection("chats").add({
+    await addDoc(collection(db, "chats"), {
       users: [user.email, input],
-      lastActive: firebase.firestore.FieldValue.serverTimestamp(),
+      lastActive: serverTimestamp(),
     });
   };
 
   private chatExists = async (recipientEmail: string) => {
-    let exists = !!this.chats.find((chat) =>
+    const exists = !!this.chats.find((chat) =>
       chat.users.includes(recipientEmail)
     );
 
@@ -175,13 +194,14 @@ class ChatStore {
       return true;
     }
 
-    const chatsSnapshot = await this.chatsQuery.get();
-
-    exists = !!chatsSnapshot.docs.find((doc) =>
-      doc.data().users.find((user: string) => user === recipientEmail)
+    const chatsQuery = query(
+      collection(db, "chats"),
+      where("users", "array-contains", recipientEmail)
     );
 
-    if (exists) {
+    const chatsSnapshot = await getDocs(chatsQuery);
+
+    if (!chatsSnapshot.empty) {
       return true;
     }
 
@@ -193,18 +213,17 @@ class ChatStore {
       return true;
     }
 
-    const chatSnapshot = await db.collection("chats").doc(id).get();
+    const chatRef = doc(db, "chats", id);
+    const chatSnapshot = await getDoc(chatRef);
 
-    if (chatSnapshot.exists) {
+    if (chatSnapshot.exists()) {
       return true;
     }
 
     return false;
   };
 
-  setChatsQuery = (
-    chatsQuery: firebase.firestore.Query<firebase.firestore.DocumentData> | null
-  ) => {
+  setChatsQuery = (chatsQuery: Query<DocumentData> | null) => {
     this.chatsQuery = chatsQuery;
   };
 }
