@@ -1,7 +1,5 @@
 <h1 align="center">
-  <a href="https://whatsapp-clone-martstech.vercel.app">
-      <img width="200px" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/479px-WhatsApp.svg.png" alt="Whatsapp Logo" />
-  </a>
+  <img width="200px" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/479px-WhatsApp.svg.png" alt="Whatsapp Logo" />
   <br />
   Whatsapp Clone
   <br />
@@ -18,7 +16,6 @@
 </p>
 
 <p align="center">
-  <a href="#demo">Demo</a> •
   <a href="#key-features">Key Features</a> •
   <a href="#key-technologies">Key Technologies</a> •
   <a href="#setup">Setup</a> •
@@ -27,12 +24,6 @@
 </p>
 
 ![Chat Screenshot](public/screenshots/chat.png?raw=true "Chat Screenshot")
-
----
-
-## Demo
-
-Here is a working live demo [here](https://whatsapp-clone-martstech.vercel.app)
 
 ---
 
